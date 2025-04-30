@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model region {
+  id        Int       @id @default(autoincrement())
+  name      String
+  createdAt DateTime  @default(now())
+  products  product[]
+  users     user[]
+}
+
+model user {
+  id          Int        @id @default(autoincrement())
+  firstName   String
+  lastName    String
+  role        RoleUser   @default(user)
+  email       String     @unique
+  password    String
+  picture     String?
+  regionId    Int
+  year        Int
+  status      userStatus @default(offline)
+  createdAt   DateTime   @default(now())
+  fromChat    chat[]     @relation("fromChat")
+  toChat      chat[]     @relation("toChat")
+  comments    comment[]
+  fromMessage message[]  @relation("fromMessage")
+  toMessage   message[]  @relation("toMessage")
+  message     message[]
+  products    product[]
+  region      region     @relation(fields: [regionId], references: [id])
+
+  @@index([email])
+}
+
+model category {
+  id        Int       @id @default(autoincrement())
+  type      type      @default(electronics)
+  picture   String?
+  createdAt DateTime  @default(now())
+  products  product[]
+}
+
+model color {
+  id            Int            @id @default(autoincrement())
+  name          String
+  createdAt     DateTime       @default(now())
+  order         order[]
+  productColors productColor[]
+}
+
+model product {
+  id            Int            @id @default(autoincrement())
+  name          String
+  price         Int
+  categoryId    Int
+  type          type           @default(electronics)
+  status        productStatus  @default(pending)
+  count         Int
+  discount      Int
+  desc          String
+  view          Int
+  userId        Int
+  picture       String?
+  regionId      Int
+  createdAt     DateTime       @default(now())
+  comments      comment[]
+  likes         like[]
+  orders        order[]
+  category      category       @relation(fields: [categoryId], references: [id])
+  region        region         @relation(fields: [regionId], references: [id])
+  user          user           @relation(fields: [userId], references: [id])
+  productColors productColor[]
+}
+
+model productColor {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  colorId   Int
+  color     color   @relation(fields: [colorId], references: [id])
+  product   product @relation(fields: [productId], references: [id])
+}
+
+model comment {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  text      String
+  star      Int
+  createdAt DateTime @default(now())
+  product   product  @relation(fields: [productId], references: [id])
+  user      user     @relation(fields: [userId], references: [id])
+}
+
+model like {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  createdAt DateTime @default(now())
+  product   product  @relation(fields: [productId], references: [id])
+}
+
+model order {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  count     Int
+  colorId   Int?
+  createdAt DateTime @default(now())
+  color     color?   @relation(fields: [colorId], references: [id])
+  product   product  @relation(fields: [productId], references: [id])
+}
+
+model chat {
+  id        Int      @id @default(autoincrement())
+  toId      Int
+  fromId    Int
+  createdAt DateTime @default(now())
+  from      user     @relation("fromChat", fields: [fromId], references: [id])
+  to        user     @relation("toChat", fields: [toId], references: [id])
+}
+
+model message {
+  id        Int      @id @default(autoincrement())
+  toId      Int
+  fromId    Int
+  createdAt DateTime @default(now())
+  userId    Int?
+  from      user     @relation("fromMessage", fields: [fromId], references: [id])
+  to        user     @relation("toMessage", fields: [toId], references: [id])
+  user      user?    @relation(fields: [userId], references: [id])
+}
+
+enum type {
+  electronics
+  phones
+  shoes
+  clothes
+}
+
+enum RoleUser {
+  admin
+  superadmin
+  user
+}
+
+enum userStatus {
+  active
+  offline
+}
+
+enum productStatus {
+  active
+  pending
+  soldOut
+}
