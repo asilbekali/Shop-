@@ -32,11 +32,10 @@ model user {
   comments    comment[]
   fromMessage message[]  @relation("fromMessage")
   toMessage   message[]  @relation("toMessage")
-  message     message[]
   products    product[]
   region      region     @relation(fields: [regionId], references: [id])
-
-  @@index([email])
+  view        view[]
+  message     message[]
 }
 
 model category {
@@ -65,7 +64,6 @@ model product {
   count         Int
   discount      Int
   desc          String
-  view          Int
   userId        Int
   picture       String?
   regionId      Int
@@ -77,6 +75,7 @@ model product {
   region        region         @relation(fields: [regionId], references: [id])
   user          user           @relation(fields: [userId], references: [id])
   productColors productColor[]
+  view          view[]
 }
 
 model productColor {
@@ -135,6 +134,15 @@ model message {
   user      user?    @relation(fields: [userId], references: [id])
 }
 
+model view {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      user     @relation(fields: [userId], references: [id])
+  productId Int
+  product   product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+}
+
 enum type {
   electronics
   phones
@@ -156,5 +164,5 @@ enum userStatus {
 enum productStatus {
   active
   pending
-  soldOut
+  offline
 }
