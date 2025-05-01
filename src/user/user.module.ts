@@ -12,6 +12,7 @@ import { MailModule } from 'src/mail/mail.module';
     JwtModule.register({
       secret: 'shop',
       signOptions: { expiresIn: '1h' },
+      global: true
     }),
   ],
   controllers: [UserController],
