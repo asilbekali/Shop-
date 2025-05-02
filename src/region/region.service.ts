@@ -33,7 +33,7 @@ export class RegionService {
           },
         },
         orderBy: {
-          name: sortOrder as 'asc' | 'desc', // SortOrder sifatida aniq belgilash
+          name: sortOrder as 'asc' | 'desc', 
         },
         skip,
         take: limit,
