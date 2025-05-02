@@ -10,7 +10,6 @@ export class CommentService {
 
   async create(createCommentDto: CreateCommentDto, req: Request) {
     try {
-      // Foydalanuvchi autentifikatsiyadan o'tganini tekshirish
       if (!req['user'] || !req['user'].id) {
         return {
           statusCode: 401,
@@ -18,7 +17,6 @@ export class CommentService {
         };
       }
 
-      // Mahsulot ID'si to'g'riligini tekshirish
       if (isNaN(createCommentDto.productId)) {
         return {
           statusCode: 400,
@@ -26,7 +24,6 @@ export class CommentService {
         };
       }
 
-      // Mahsulot mavjudligini tekshirish
       const product = await this.prisma.product.findUnique({
         where: { id: createCommentDto.productId },
       });
@@ -38,7 +35,6 @@ export class CommentService {
         };
       }
 
-      // Yulduz bahosining to'g'riligi
       if (
         createCommentDto.star < 0 ||
         createCommentDto.star > 5 ||
@@ -50,7 +46,6 @@ export class CommentService {
         };
       }
 
-      // Yangi sharh yaratish
       const newComment = await this.prisma.comment.create({
         data: {
           userId: req['user'].id,

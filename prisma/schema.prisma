@@ -16,28 +16,28 @@ model region {
 }
 
 model user {
-  id          Int        @id @default(autoincrement())
-  firstName   String
-  lastName    String
-  role        RoleUser   @default(user)
-  email       String     @unique
-  password    String
-  picture     String?
-  regionId    Int
-  year        Int
-  status      userStatus @default(offline)
-  createdAt   DateTime   @default(now())
-  fromChat    chat[]     @relation("fromChat")
-  toChat      chat[]     @relation("toChat")
-  comments    comment[]
-  fromMessage message[]  @relation("fromMessage")
-  toMessage   message[]  @relation("toMessage")
-  products    product[]
-  region      region     @relation(fields: [regionId], references: [id])
-  view        view[]
-  like        like[]
-  order       order[]
-  star        star[]
+  id        Int        @id @default(autoincrement())
+  firstName String
+  lastName  String
+  role      RoleUser   @default(user)
+  email     String     @unique
+  password  String
+  picture   String?
+  regionId  Int
+  year      Int
+  status    userStatus @default(offline)
+  createdAt DateTime   @default(now())
+  fromChat  chat[]     @relation("fromChat")
+  toChat    chat[]     @relation("toChat")
+  comments  comment[]
+  products  product[]
+  region    region     @relation(fields: [regionId], references: [id])
+  view      view[]
+  like      like[]
+  order     order[]
+  star      star[]
+  sentMessages Message[]  @relation("SentMessages")
+  receivedMessages Message[]  @relation("ReceivedMessages")
 }
 
 model category {
@@ -137,22 +137,22 @@ model order {
 }
 
 model chat {
-  id        Int      @id @default(autoincrement())
-  toId      Int
-  fromId    Int
-  createdAt DateTime @default(now())
-  from      user     @relation("fromChat", fields: [fromId], references: [id])
-  to        user     @relation("toChat", fields: [toId], references: [id])
+  id           Int      @id @default(autoincrement())
+  toId         Int
+  fromId       Int
+  chatemessage String
+  createdAt    DateTime @default(now())
+  from         user     @relation("fromChat", fields: [fromId], references: [id])
+  to           user     @relation("toChat", fields: [toId], references: [id])
 }
 
-model message {
-  id        Int      @id @default(autoincrement())
-  toId      Int
-  fromId    Int
-  userId    Int?
-  from      user     @relation("fromMessage", fields: [fromId], references: [id])
-  to        user     @relation("toMessage", fields: [toId], references: [id])
-  createdAt DateTime @default(now())
+model Message {
+  id     Int    @id @default(autoincrement())
+  text   String
+  fromId Int
+  toId   Int
+  from   user   @relation("SentMessages", fields: [fromId], references: [id])
+  to     user   @relation("ReceivedMessages", fields: [toId], references: [id])
 }
 
 model view {
