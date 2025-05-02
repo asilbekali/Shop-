@@ -59,51 +59,55 @@ export class UserService {
         where: { id: dto.regionId },
       });
 
-      if (bazaRegion) {
-        if (typeof dto.email == 'string' && dto.email.endsWith('@gmail.com')) {
-          const newUser = await this.prisma.user.create({
-            data: {
-              firstName: dto.firstName,
-              lastName: dto.lastName,
-              role: dto.role as RoleUser,
-              email: dto.email,
-              password: hash,
-              picture: dto.picture,
-              regionId: dto.regionId,
-              year: dto.year,
-              status: userStatus.offline,
-            },
-          });
+      if (!bazaRegion) {
+        // Instead of throwing an error, we return a message that the region is not found.
+        return {
+          message: `Region with id ${dto.regionId} not found. Please ensure the region is correct.`,
+          regionFound: false,
+        };
+      }
 
-          authenticator.options = { step: 1200 };
-          const secret = authenticator.generateSecret();
-          const otp = authenticator.generate(secret);
+      if (typeof dto.email == 'string' && dto.email.endsWith('@gmail.com')) {
+        const newUser = await this.prisma.user.create({
+          data: {
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            role: dto.role as RoleUser,
+            email: dto.email,
+            password: hash,
+            picture: dto.picture,
+            regionId: dto.regionId,
+            year: dto.year,
+            status: userStatus.offline,
+          },
+        });
 
-          console.log(otp); //-----------------------------------------
+        authenticator.options = { step: 1200 };
+        const secret = authenticator.generateSecret();
+        const otp = authenticator.generate(secret);
 
-          await this.mailer.sendEmail(newUser.email, 'Your otp', otp);
+        console.log(otp); //-----------------------------------------
 
-          this.otpStore.set(newUser.email, {
-            otp,
-            expiresAt: Date.now() + 1200000,
-          });
+        await this.mailer.sendEmail(newUser.email, 'Your otp', otp);
 
-          return {
-            message: `One Time password send to your email dear our new user ${newUser.firstName}`,
-          };
-        } else {
-          throw new BadRequestException('Bad email adress entred');
-        }
+        this.otpStore.set(newUser.email, {
+          otp,
+          expiresAt: Date.now() + 1200000,
+        });
+
+        return {
+          message: `One Time password sent to your email dear our new user ${newUser.firstName}`,
+        };
       } else {
-        throw new BadRequestException('Region id not found');
+        throw new BadRequestException('Bad email address entered');
       }
     } catch (error) {
-      console.log(error);
-      return { message: 'user register error' };
+      console.error('Error during user registration:', error);
+      throw new BadRequestException(`Error during user registration: ${error.message}`);
     }
   }
 
-  // ////////////////////////////////////////////////////////////////////////////////////////////
+  // ///////////////////////////////////////////////////////////////////////
 
   async verify(email: string, otpBody: string) {
     try {
@@ -126,12 +130,12 @@ export class UserService {
         throw new BadRequestException('OTP is invalid or expired');
       }
     } catch (error) {
-      console.log(error);
-      return { message: 'Error in otp verify ' };
+      console.error('Error in OTP verification:', error);
+      throw new BadRequestException('Error in OTP verification');
     }
   }
 
-  // ///////////////////////////////////////////////////////////////////////////////////
+  // ///////////////////////////////////////////////////////////////////////
 
   async getAccessToken(bazaUser: any) {
     try {
@@ -150,12 +154,12 @@ export class UserService {
 
       return token;
     } catch (error) {
-      console.log(error);
-      return { message: 'Error get access token' };
+      console.error('Error in getting access token:', error);
+      throw new BadRequestException('Error in generating access token');
     }
   }
 
-  // ////////////////////////////////////////////////////////////////////////////////////////////
+  // ///////////////////////////////////////////////////////////////////////
 
   async generateRefreshToken(bazaUser: any) {
     try {
@@ -174,12 +178,12 @@ export class UserService {
 
       return token;
     } catch (error) {
-      console.log(error);
-      return { message: 'Error in get refresh token' };
+      console.error('Error in generating refresh token:', error);
+      throw new BadRequestException('Error in generating refresh token');
     }
   }
 
-  // ////////////////////////////////////////////////////////////////////////////////////////////
+  // ///////////////////////////////////////////////////////////////////////
 
   async login(email: string, password: string) {
     try {
@@ -193,7 +197,7 @@ export class UserService {
 
       if (status == userStatus['offline']) {
         throw new BadRequestException(
-          'First you must be verifired your account !',
+          'First you must verify your account!',
         );
       }
 
@@ -207,8 +211,8 @@ export class UserService {
       const refreshToken = await this.generateRefreshToken(bazaUser);
       return { AccessToken: accessToken, RefreshToken: refreshToken };
     } catch (error) {
-      console.log(error);
-      return { message: 'Error in user login' };
+      console.error('Error in user login:', error);
+      throw new BadRequestException('Error in user login');
     }
   }
 
@@ -216,7 +220,7 @@ export class UserService {
     return user;
   }
 
-  // ///////////////////////////////////////////////////////
+  // ///////////////////////////////////////////////////////////////////////
 
   async registerAdmin(dto: CreateUserDto) {
     try {
@@ -235,51 +239,53 @@ export class UserService {
         where: { id: dto.regionId },
       });
 
-      if (bazaRegion) {
-        if (typeof dto.email == 'string' && dto.email.endsWith('@gmail.com')) {
-          const newUser = await this.prisma.user.create({
-            data: {
-              firstName: dto.firstName,
-              lastName: dto.lastName,
-              role: RoleUser['admin'],
-              email: dto.email,
-              password: hash,
-              picture: dto.picture,
-              regionId: dto.regionId,
-              year: dto.year,
-              status: userStatus.offline,
-            },
-          });
+      if (!bazaRegion) {
+        // Region ID topilmasa, loglash va to'liq xatolik yuborish
+        console.log(`Region with id ${dto.regionId} not found`);
+        throw new BadRequestException(`Region id ${dto.regionId} not found`);
+      }
 
-          authenticator.options = { step: 1200 };
-          const secret = authenticator.generateSecret();
-          const otp = authenticator.generate(secret);
+      if (typeof dto.email == 'string' && dto.email.endsWith('@gmail.com')) {
+        const newUser = await this.prisma.user.create({
+          data: {
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            role: RoleUser['admin'],
+            email: dto.email,
+            password: hash,
+            picture: dto.picture,
+            regionId: dto.regionId,
+            year: dto.year,
+            status: userStatus.offline,
+          },
+        });
 
-          console.log(otp); //-----------------------------------------
+        authenticator.options = { step: 1200 };
+        const secret = authenticator.generateSecret();
+        const otp = authenticator.generate(secret);
 
-          await this.mailer.sendEmail(newUser.email, 'Your otp', otp);
+        console.log(otp); //-----------------------------------------
 
-          this.otpStore.set(newUser.email, {
-            otp,
-            expiresAt: Date.now() + 1200000,
-          });
+        await this.mailer.sendEmail(newUser.email, 'Your otp', otp);
 
-          return {
-            message: `One Time password send to your email dear our new user ${newUser.firstName}`,
-          };
-        } else {
-          throw new BadRequestException('Bad email adress entred');
-        }
+        this.otpStore.set(newUser.email, {
+          otp,
+          expiresAt: Date.now() + 1200000,
+        });
+
+        return {
+          message: `One Time password sent to your email dear our new user ${newUser.firstName}`,
+        };
       } else {
-        throw new BadRequestException('Region id not found');
+        throw new BadRequestException('Bad email address entered');
       }
     } catch (error) {
-      console.log(error);
-      return { message: 'Error in admin register' };
+      console.error('Error in admin registration:', error);
+      throw new BadRequestException(`Error in admin registration: ${error.message}`);
     }
   }
 
-  // ///////////////////////////////////////////////////////////
+  // ///////////////////////////////////////////////////////////////////////
 
   async addAdmin(userId: number, req: any) {
     try {
@@ -298,8 +304,8 @@ export class UserService {
         }
       }
     } catch (error) {
-      console.log(error);
-      return { message: 'Error in add admin' };
+      console.error('Error in adding admin:', error);
+      throw new BadRequestException('Error in add admin');
     }
   }
 
@@ -307,15 +313,34 @@ export class UserService {
     return await this.prisma.user.findMany();
   }
 
-  ///////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////
 
   async refreshToken(refresh: string) {
     try {
       const bazaUser = this.jwt.verify(refresh['refreshToken']);
       return { accessToken: await this.getAccessToken(bazaUser) };
     } catch (error) {
-      console.log(error);
-      return { message: 'Error in refresh token create' };
+      console.error('Error in generating refresh token:', error);
+      throw new BadRequestException('Error in generating refresh token');
+    }
+  }
+
+  ///////////////////////////////////////////////////////////////////////
+
+  async getUsersByRegion(regionId: number) {
+    try {
+      const users = await this.prisma.user.findMany({
+        where: { regionId },
+      });
+
+      if (!users.length) {
+        throw new NotFoundException('No users found for this region');
+      }
+
+      return users;
+    } catch (error) {
+      console.error('Error in fetching users by region:', error);
+      throw new NotFoundException('Error in fetching users by region');
     }
   }
 }
