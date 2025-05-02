@@ -84,6 +84,10 @@ export class ProductService {
         },
         skip: (page - 1) * limit,
         take: limit,
+
+        include: {
+          user: true,
+        },
       });
 
       return products;
@@ -96,6 +100,9 @@ export class ProductService {
     try {
       const product = await this.prisma.product.findUnique({
         where: { id },
+        include: {
+          user: true,
+        },
       });
 
       if (!product) {

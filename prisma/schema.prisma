@@ -35,7 +35,7 @@ model user {
   products    product[]
   region      region     @relation(fields: [regionId], references: [id])
   view        view[]
-  message     message[]
+  like        like[]
 }
 
 model category {
@@ -68,7 +68,7 @@ model product {
   userId        Int
   picture       String
   regionId      Int
-  color         String? 
+  color         String?
   createdAt     DateTime       @default(now())
   comments      comment[]
   likes         like[]
@@ -100,10 +100,14 @@ model comment {
 }
 
 model like {
-  id        Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
+
+  userId Int
+  user   user @relation(fields: [userId], references: [id])
+
   productId Int
-  createdAt DateTime @default(now())
   product   product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
 }
 
 model order {
@@ -129,11 +133,10 @@ model message {
   id        Int      @id @default(autoincrement())
   toId      Int
   fromId    Int
-  createdAt DateTime @default(now())
   userId    Int?
   from      user     @relation("fromMessage", fields: [fromId], references: [id])
   to        user     @relation("toMessage", fields: [toId], references: [id])
-  user      user?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }
 
 model view {
