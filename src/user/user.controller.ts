@@ -155,8 +155,6 @@ export class UserController {
     return this.userService.addAdmin(body.userId, req.user);
   }
 
-  @RoleDec(Role.ADMIN)
-  @UseGuards(RolesGuard)
   @Get('all-users')
   async getAll() {
     return this.userService.getAllUser();
