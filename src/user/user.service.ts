@@ -103,30 +103,11 @@ export class UserService {
       }
     } catch (error) {
       console.error('Error during user registration:', error);
-      throw new BadRequestException(
-        `Error during user registration: ${error.message}`,
-      );
+      throw new BadRequestException(`Error during user registration: ${error.message}`);
     }
   }
 
   // ///////////////////////////////////////////////////////////////////////
-
-  async resentOtp(email) {
-    authenticator.options = { step: 1200 };
-    const secret = authenticator.generateSecret();
-    const otp = authenticator.generate(secret);
-
-    console.log(otp); //-----------------------------------------
-
-    await this.mailer.sendEmail(email, 'Your otp', otp);
-
-    this.otpStore.set(email, {
-      otp,
-      expiresAt: Date.now() + 1200000,
-    });
-
-    return {message: "Otp send to your email"}
-  }
 
   async verify(email: string, otpBody: string) {
     try {
@@ -144,7 +125,7 @@ export class UserService {
           data: { status: 'active' },
         });
 
-        return { message: `your accaunt ${updatedUser.status}` };
+        return {message: `your accaunt ${updatedUser.status}ted`};
       } else {
         throw new BadRequestException('OTP is invalid or expired');
       }
@@ -215,7 +196,9 @@ export class UserService {
       const status = bazaUser.status;
 
       if (status == userStatus['offline']) {
-        throw new BadRequestException('First you must verify your account!');
+        throw new BadRequestException(
+          'First you must verify your account!',
+        );
       }
 
       const match = await bcrypt.compareSync(password, bazaUser.password);
@@ -298,9 +281,7 @@ export class UserService {
       }
     } catch (error) {
       console.error('Error in admin registration:', error);
-      throw new BadRequestException(
-        `Error in admin registration: ${error.message}`,
-      );
+      throw new BadRequestException(`Error in admin registration: ${error.message}`);
     }
   }
 

@@ -6,18 +6,15 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiBody,
-  ApiBearerAuth,
-  ApiResponse,
-  ApiProperty,
-} from '@nestjs/swagger';
+import { ApiTags, ApiBody, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserService } from './user.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { RoleUser, userStatus } from '@prisma/client';
+import { RoleDec } from './decorator/roles.decorator';
+import { Role } from './enum/roles.enum';
+import { RolesGuard } from 'src/roles/roles.guard';
 
 @ApiTags('user')
 @Controller('user')
@@ -99,7 +96,7 @@ export class UserController {
   @Post('/login')
   @ApiBody({
     description: 'Login credentials',
-    schema: {
+    schema: {                   
       type: 'object',
       properties: {
         email: { type: 'string', example: 'alex@gmail.com' },
@@ -158,42 +155,25 @@ export class UserController {
     return this.userService.addAdmin(body.userId, req.user);
   }
 
+  @RoleDec(Role.ADMIN)
+  @UseGuards(RolesGuard)
   @Get('all-users')
   async getAll() {
     return this.userService.getAllUser();
   }
 
-  @Post('refresh-token')
+
+  @Post("refresh-token")
   @ApiBody({
     description: 'Refresh token for update access token',
     schema: {
       type: 'object',
       properties: {
-        refreshToken: {
-          type: 'string',
-          example: 'woefenwoefowmwpoedpwodpwpdoe',
-        },
+        refreshToken: { type: 'string', example: "woefenwoefowmwpoedpwodpwpdoe" },
       },
     },
   })
-  async refreshToken(@Body() data: string) {
-    return this.userService.refreshToken(data);
-  }
-
-  @Post('resent-otp')
-  @ApiBody({
-    description: 'Request to resend OTP to the user email',
-    schema: {
-      type: 'object',
-      properties: {
-        email: {
-          type: 'string',
-          example: 'user@example.com', // Example email address to be used in Swagger UI
-        },
-      },
-    },
-  })
-  async resentOtp(@Body() email: string) {
-    return this.userService.resentOtp(email);
+  async refreshToken(@Body() data: string){
+    return this.userService.refreshToken(data)
   }
 }
