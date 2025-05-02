@@ -103,7 +103,9 @@ export class UserService {
       }
     } catch (error) {
       console.error('Error during user registration:', error);
-      throw new BadRequestException(`Error during user registration: ${error.message}`);
+      throw new BadRequestException(
+        `Error during user registration: ${error.message}`,
+      );
     }
   }
 
@@ -125,7 +127,7 @@ export class UserService {
           data: { status: 'active' },
         });
 
-        return updatedUser.status;
+        return { message: `your accaunt ${updatedUser.status}` };
       } else {
         throw new BadRequestException('OTP is invalid or expired');
       }
@@ -196,9 +198,7 @@ export class UserService {
       const status = bazaUser.status;
 
       if (status == userStatus['offline']) {
-        throw new BadRequestException(
-          'First you must verify your account!',
-        );
+        throw new BadRequestException('First you must verify your account!');
       }
 
       const match = await bcrypt.compareSync(password, bazaUser.password);
@@ -281,7 +281,9 @@ export class UserService {
       }
     } catch (error) {
       console.error('Error in admin registration:', error);
-      throw new BadRequestException(`Error in admin registration: ${error.message}`);
+      throw new BadRequestException(
+        `Error in admin registration: ${error.message}`,
+      );
     }
   }
 
