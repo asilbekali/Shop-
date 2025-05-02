@@ -53,7 +53,7 @@ export class MessageService {
         return {
           success: false,
           error:
-            'Invalid foreign key reference. Please ensure the recipient exists.',
+            'User not found',
         };
       }
       console.error('Error creating message:', error);
