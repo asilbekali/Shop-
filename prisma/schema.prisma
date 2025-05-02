@@ -36,6 +36,8 @@ model user {
   region      region     @relation(fields: [regionId], references: [id])
   view        view[]
   like        like[]
+  order       order[]
+  star        star[]
 }
 
 model category {
@@ -78,6 +80,7 @@ model product {
   user          user           @relation(fields: [userId], references: [id])
   productColors productColor[]
   view          view[]
+  star          star[]
 }
 
 model productColor {
@@ -99,6 +102,17 @@ model comment {
   user      user     @relation(fields: [userId], references: [id])
 }
 
+model star {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   user @relation(fields: [userId], references: [id])
+
+  productId Int
+  product   product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
 model like {
   id Int @id @default(autoincrement())
 
@@ -113,6 +127,8 @@ model like {
 model order {
   id        Int      @id @default(autoincrement())
   productId Int
+  userId    Int
+  user      user     @relation(fields: [userId], references: [id])
   count     Int
   colorId   Int?
   createdAt DateTime @default(now())

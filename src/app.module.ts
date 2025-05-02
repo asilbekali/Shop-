@@ -10,9 +10,11 @@ import { ColorModule } from './color/color.module';
 import { ProductModule } from './product/product.module';
 import { LikeModule } from './like/like.module';
 import { OrderModule } from './order/order.module';
+import { CommentModule } from './comment/comment.module';
+import { MessageModule } from './message/message.module';
 
 @Module({
-  imports: [PrismaModule, UserModule, MulterModule, RegionModule,  CategoryModule, ColorModule, ProductModule, LikeModule, OrderModule],
+  imports: [PrismaModule, UserModule, MulterModule, RegionModule,  CategoryModule, ColorModule, ProductModule, LikeModule, OrderModule, CommentModule, MessageModule],
   controllers: [AppController],
   providers: [AppService],
 })
