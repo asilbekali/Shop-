@@ -60,14 +60,17 @@ export class UserService {
       });
 
       if (!bazaRegion) {
-        // Instead of throwing an error, we return a message that the region is not found.
         return {
           message: `Region with id ${dto.regionId} not found. Please ensure the region is correct.`,
           regionFound: false,
         };
       }
 
-      if (typeof dto.email == 'string' && dto.email.endsWith('@gmail.com')) {
+      if (
+        typeof dto.email == 'string' &&
+        dto.email.endsWith('@gmail.com') &&
+        dto.role == Role.USER
+      ) {
         const newUser = await this.prisma.user.create({
           data: {
             firstName: dto.firstName,
@@ -102,8 +105,10 @@ export class UserService {
         throw new BadRequestException('Bad email address entered');
       }
     } catch (error) {
-      console.error('Error during user registration:', error);
-      throw new BadRequestException(`Error during user registration: ${error.message}`);
+      console.error('Error during user registration or dont registred admin role:', error);
+      throw new BadRequestException(
+        `Error during user registration: ${error.message}`,
+      );
     }
   }
 
@@ -125,7 +130,7 @@ export class UserService {
           data: { status: 'active' },
         });
 
-        return {message: `your accaunt ${updatedUser.status}ted`};
+        return { message: `your accaunt ${updatedUser.status}ted` };
       } else {
         throw new BadRequestException('OTP is invalid or expired');
       }
@@ -196,9 +201,7 @@ export class UserService {
       const status = bazaUser.status;
 
       if (status == userStatus['offline']) {
-        throw new BadRequestException(
-          'First you must verify your account!',
-        );
+        throw new BadRequestException('First you must verify your account!');
       }
 
       const match = await bcrypt.compareSync(password, bazaUser.password);
@@ -281,7 +284,9 @@ export class UserService {
       }
     } catch (error) {
       console.error('Error in admin registration:', error);
-      throw new BadRequestException(`Error in admin registration: ${error.message}`);
+      throw new BadRequestException(
+        `Error in admin registration: ${error.message}`,
+      );
     }
   }
 
