@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRegionDto } from './dto/create-region.dto';
 import { UpdateRegionDto } from './dto/update-region.dto';
@@ -13,14 +13,18 @@ export class RegionService {
         data: createRegionDto,
       });
     } catch (error) {
-      throw new Error(`Failed to create region: ${error.message}`);
+      console.error('Error creating region:', error);
+      throw new HttpException(
+        'Failed to create region. Please try again later.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
-  async findAll({ page, limit, name, sortOrder }) {
+  async findAll({ page = 1, limit = 10, name = '', sortOrder = 'asc' }) {
     try {
       const skip = (page - 1) * limit;
-
+  
       const regions = await this.prisma.region.findMany({
         where: {
           name: {
@@ -29,12 +33,12 @@ export class RegionService {
           },
         },
         orderBy: {
-          name: sortOrder,
+          name: sortOrder as 'asc' | 'desc', // SortOrder sifatida aniq belgilash
         },
         skip,
         take: limit,
       });
-
+  
       const total = await this.prisma.region.count({
         where: {
           name: {
@@ -43,7 +47,7 @@ export class RegionService {
           },
         },
       });
-
+  
       return {
         data: regions,
         total,
@@ -51,41 +55,80 @@ export class RegionService {
         limit,
       };
     } catch (error) {
-      throw new Error(`Failed to retrieve regions: ${error.message}`);
+      console.error('Error retrieving regions:', error);
+      throw new HttpException(
+        'Failed to retrieve regions. Please try again later.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
   async findOne(id: number) {
     try {
-      return await this.prisma.region.findUnique({
+      const region = await this.prisma.region.findUnique({
         where: { id },
       });
+
+      if (!region) {
+        throw new HttpException('Region not found', HttpStatus.NOT_FOUND);
+      }
+
+      return region;
     } catch (error) {
-      throw new Error(`Failed to find region with ID ${id}: ${error.message}`);
+      console.error(`Error finding region with ID ${id}:`, error);
+      throw new HttpException(
+        'Failed to find the region. Please try again later.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
-
+  
   async update(id: number, updateRegionDto: UpdateRegionDto) {
     try {
-      return await this.prisma.region.update({
+      const updatedRegion = await this.prisma.region.update({
         where: { id },
         data: updateRegionDto,
       });
+
+      return updatedRegion;
     } catch (error) {
-      throw new Error(
-        `Failed to update region with ID ${id}: ${error.message}`,
+      console.error(`Error updating region with ID ${id}:`, error);
+
+      if (error.code === 'P2025') {
+        throw new HttpException('Region not found', HttpStatus.NOT_FOUND);
+      }
+
+      throw new HttpException(
+        'Failed to update the region. Please try again later.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   async remove(id: number) {
     try {
-      return await this.prisma.region.delete({
+      const deletedRegion = await this.prisma.region.delete({
         where: { id },
       });
+
+      return deletedRegion;
     } catch (error) {
-      throw new Error(
-        `Failed to delete region with ID ${id}: ${error.message}`,
+      console.error(`Error deleting region with ID ${id}:`, error);
+
+      if (error.code === 'P2025') {
+        throw new HttpException('Region not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (error.code === 'P2003') {
+        throw new HttpException(
+          'Cannot delete the region as it is linked to other records.',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      throw new HttpException(
+        'Failed to delete the region. Please try again later.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

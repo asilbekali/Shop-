@@ -72,20 +72,20 @@ export class RegionController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.regionService.findOne(+id);
+    return this.regionService.findOne(+id); // Ensure `id` is converted to a number
   }
 
   @RoleDec(Role.ADMIN, Role.SUPER_ADMIN)
   @UseGuards(RolesGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateRegionDto: UpdateRegionDto) {
-    return this.regionService.update(+id, updateRegionDto);
+    return this.regionService.update(+id, updateRegionDto); // Convert id to number
   }
 
   @RoleDec(Role.ADMIN)
   @UseGuards(RolesGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.regionService.remove(+id);
+    return this.regionService.remove(+id); // Convert id to number
   }
 }
