@@ -23,8 +23,6 @@ export class RegionController {
   constructor(private readonly regionService: RegionService) {}
 
   @UseGuards(AuthGuard)
-  @RoleDec(Role.ADMIN)
-  @UseGuards(RolesGuard)
   @Post()
   create(@Body() createRegionDto: CreateRegionDto) {
     return this.regionService.create(createRegionDto);

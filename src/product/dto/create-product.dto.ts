@@ -69,7 +69,7 @@ export class CreateProductDto {
   @IsNumber()
   regionId: number;
 
-  @ApiProperty({ example: 'Red', description: 'The color of the product' })
+  @ApiProperty({ example: 'red', description: 'The color of the product' })
   @IsNotEmpty()
   @IsString()
   color: string;
