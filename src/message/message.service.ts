@@ -32,24 +32,15 @@ export class MessageService {
           data: {
             fromId: req['user'].id,
             toId: createMessageDto.toId,
-            chatemessage: createMessageDto.text, 
-          },
-        });
-
-        await this.prisma.chat.update({
-          where: { id: chat.id },
-          data: { chatemessage: createMessageDto.text }
-        });
-      }
-
-      else {
-        await this.prisma.chat.update({
-          where: { id: chat.id },
-          data: {
-            chatemessage: createMessageDto.text, 
+            chatemessage: createMessageDto.text,
           },
         });
       }
+
+      await this.prisma.chat.update({
+        where: { id: chat.id },
+        data: { chatemessage: createMessageDto.text },
+      });
 
       return {
         message: 'Message successfully sent!',
@@ -58,7 +49,7 @@ export class MessageService {
       };
     } catch (error) {
       console.error('Error creating message:', error);
-      return { message: 'An error occurred while sending the message.' };
+      return { success: false, error: 'Failed to create message.' };
     }
   }
 
@@ -69,15 +60,15 @@ export class MessageService {
           OR: [{ fromId: req['user'].id }, { toId: req['user'].id }],
         },
         include: {
-          from: true, 
-          to: true, 
+          from: true,
+          to: true,
         },
       });
 
-      return messages;
+      return { success: true, messages };
     } catch (error) {
       console.error('Error retrieving messages:', error);
-      return { message: 'An error occurred while fetching messages.' };
+      return { success: false, error: 'Failed to fetch messages.' };
     }
   }
 
@@ -92,13 +83,13 @@ export class MessageService {
       });
 
       if (!message) {
-        return { message: 'Message not found.' };
+        return { success: false, error: 'Message not found.' };
       }
 
-      return message;
+      return { success: true, message };
     } catch (error) {
       console.error('Error retrieving message:', error);
-      return { message: 'An error occurred while fetching the message.' };
+      return { success: false, error: 'Failed to fetch the message.' };
     }
   }
 
@@ -107,17 +98,18 @@ export class MessageService {
       const message = await this.prisma.message.update({
         where: { id },
         data: {
-          text: updateMessageDto.text, 
+          text: updateMessageDto.text,
         },
       });
 
       return {
+        success: true,
         message: 'Message successfully updated!',
         updatedMessage: message,
       };
     } catch (error) {
       console.error('Error updating message:', error);
-      return { message: 'An error occurred while updating the message.' };
+      return { success: false, error: 'Failed to update message.' };
     }
   }
 
@@ -128,12 +120,13 @@ export class MessageService {
       });
 
       return {
+        success: true,
         message: 'Message successfully deleted!',
         deletedMessage: message,
       };
     } catch (error) {
       console.error('Error deleting message:', error);
-      return { message: 'An error occurred while deleting the message.' };
+      return { success: false, error: 'Failed to delete message.' };
     }
   }
 }
