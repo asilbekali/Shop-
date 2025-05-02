@@ -18,7 +18,6 @@ import { RoleDec } from 'src/user/decorator/roles.decorator';
 import { Role } from 'src/user/enum/roles.enum';
 import { RolesGuard } from 'src/roles/roles.guard';
 
-@UseGuards(AuthGuard)
 @Controller('region')
 export class RegionController {
   constructor(private readonly regionService: RegionService) {}
