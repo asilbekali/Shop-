@@ -6,87 +6,72 @@ import {
   Patch, 
   Param, 
   Delete, 
+  Request, 
   Query, 
-  BadRequestException 
+  UseGuards 
 } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { ApiTags, ApiQuery } from '@nestjs/swagger';
+import { AuthGuard } from 'src/auth/auth.guard';
 
-@ApiTags('Products')
+@UseGuards(AuthGuard)
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
-  async create(@Body() createProductDto: CreateProductDto) {
-    try {
-      return await this.productService.create(createProductDto);
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
+  @ApiOperation({ summary: 'Create a new product' })
+  @ApiBody({ type: CreateProductDto })
+  @ApiResponse({ status: 201, description: 'The product has been successfully created.' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  create(@Body() createProductDto: CreateProductDto, @Request() req: Request) {
+    return this.productService.create(createProductDto, req);
   }
 
   @Get()
-  @ApiQuery({ name: 'page', required: false, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, example: 10 })
-  @ApiQuery({ name: 'filter', required: false, example: 'name:Product1' })
-  @ApiQuery({ name: 'sortBy', required: false, example: 'price' })
-  @ApiQuery({ name: 'order', required: false, example: 'ASC | DESC' })
-  async findAll(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-    @Query('filter') filter?: string,
-    @Query('sortBy') sortBy?: string,
-    @Query('order') order: 'ASC' | 'DESC' = 'ASC',
+  @ApiOperation({ summary: 'Retrieve all products with pagination, sorting, and filtering' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number for pagination' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of items per page' })
+  @ApiQuery({ name: 'sortBy', required: false, type: String, description: 'Field to sort by (name or regionName)' })
+  @ApiQuery({ name: 'sortOrder', required: false, type: String, enum: ['asc', 'desc'], description: 'Sort order (asc or desc)' })
+  @ApiQuery({ name: 'filterByRegion', required: false, type: String, description: 'Filter products by region name' })
+  @ApiResponse({ status: 200, description: 'List of products' })
+  findAll(
+    @Query() query: {
+      page?: number;
+      limit?: number;
+      sortBy?: 'name' | 'regionName';
+      sortOrder?: 'asc' | 'desc';
+      filterByRegion?: string;
+    },
   ) {
-    try {
-      return await this.productService.findAll({ page, limit, filter, sortBy, order });
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
+    return this.productService.findAll(query);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    try {
-      const productId = parseInt(id, 10);
-      if (isNaN(productId)) {
-        throw new BadRequestException('Invalid ID format');
-      }
-      return await this.productService.findOne(productId);
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
+  @ApiOperation({ summary: 'Get product details by ID' })
+  @ApiResponse({ status: 200, description: 'Product details' })
+  @ApiResponse({ status: 404, description: 'Product not found' })
+  findOne(@Param('id') id: string, @Request() req: Request) {
+    return this.productService.findOne(+id, req);
   }
 
   @Patch(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateProductDto: UpdateProductDto,
-  ) {
-    try {
-      const productId = parseInt(id, 10);
-      if (isNaN(productId)) {
-        throw new BadRequestException('Invalid ID format');
-      }
-      return await this.productService.update(productId, updateProductDto);
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
+  @ApiOperation({ summary: 'Update product details by ID' })
+  @ApiBody({ type: UpdateProductDto })
+  @ApiResponse({ status: 200, description: 'The product has been successfully updated.' })
+  @ApiResponse({ status: 404, description: 'Product not found' })
+  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+    return this.productService.update(+id, updateProductDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    try {
-      const productId = parseInt(id, 10);
-      if (isNaN(productId)) {
-        throw new BadRequestException('Invalid ID format');
-      }
-      return await this.productService.remove(productId);
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
+  @ApiOperation({ summary: 'Delete a product by ID' })
+  @ApiResponse({ status: 200, description: 'The product has been successfully deleted.' })
+  @ApiResponse({ status: 404, description: 'Product not found' })
+  remove(@Param('id') id: string) {
+    return this.productService.remove(+id);
   }
 }

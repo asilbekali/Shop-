@@ -66,8 +66,9 @@ model product {
   discount      Int
   desc          String
   userId        Int
-  picture       String?
+  picture       String
   regionId      Int
+  color         String? 
   createdAt     DateTime       @default(now())
   comments      comment[]
   likes         like[]

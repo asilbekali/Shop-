@@ -18,6 +18,7 @@ import { RoleDec } from 'src/user/decorator/roles.decorator';
 import { Role } from 'src/user/enum/roles.enum';
 import { RolesGuard } from 'src/roles/roles.guard';
 
+@UseGuards(AuthGuard)
 @ApiTags('Color')
 @Controller('color')
 export class ColorController {

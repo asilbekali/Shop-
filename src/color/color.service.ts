@@ -13,23 +13,23 @@ export class ColorService {
 
   async create(createColorDto: CreateColorDto) {
     try {
-      const bazaColor = await this.prisma.color.findFirst({
+      const existingColor = await this.prisma.color.findFirst({
         where: { name: createColorDto.name },
       });
 
-      if (bazaColor) {
-        throw new BadRequestException(
-          `${createColorDto.name} this color already exists`,
-        );
+      if (existingColor) {
+        throw new BadRequestException(`${createColorDto.name} already exists`);
       }
 
       return await this.prisma.color.create({
         data: { name: createColorDto.name },
       });
     } catch (error) {
-      throw error instanceof BadRequestException
-        ? error
-        : new InternalServerErrorException('Failed to create color');
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      console.error('Error creating color:', error);
+      throw new InternalServerErrorException('Failed to create color');
     }
   }
 
@@ -41,10 +41,9 @@ export class ColorService {
   ) {
     try {
       const skip = (page - 1) * limit;
-
       const where = filterByName
         ? { name: { contains: filterByName, mode: 'insensitive' as const } }
-        : undefined;
+        : {};
 
       const colors = await this.prisma.color.findMany({
         skip,
@@ -62,6 +61,7 @@ export class ColorService {
         data: colors,
       };
     } catch (error) {
+      console.error('Error fetching colors:', error);
       throw new InternalServerErrorException('Failed to fetch colors');
     }
   }
@@ -76,9 +76,11 @@ export class ColorService {
 
       return color;
     } catch (error) {
-      throw error instanceof BadRequestException
-        ? error
-        : new InternalServerErrorException('Failed to fetch color');
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      console.error('Error fetching color by ID:', error);
+      throw new InternalServerErrorException('Failed to fetch color');
     }
   }
 
@@ -95,9 +97,11 @@ export class ColorService {
         data: { ...updateColorDto },
       });
     } catch (error) {
-      throw error instanceof BadRequestException
-        ? error
-        : new InternalServerErrorException('Failed to update color');
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      console.error('Error updating color:', error);
+      throw new InternalServerErrorException('Failed to update color');
     }
   }
 
@@ -111,9 +115,11 @@ export class ColorService {
 
       return await this.prisma.color.delete({ where: { id } });
     } catch (error) {
-      throw error instanceof BadRequestException
-        ? error
-        : new InternalServerErrorException('Failed to delete color');
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      console.error('Error deleting color:', error);
+      throw new InternalServerErrorException('Failed to delete color');
     }
   }
 }

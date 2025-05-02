@@ -1,93 +1,160 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ProductService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createProductDto: CreateProductDto) {
+  async create(createProductDto: CreateProductDto, req: Request) {
     try {
-      return await this.prisma.product.create({
-        data: createProductDto,
+      const userId = req['user'].id;
+      const { regionId, categoryId } = createProductDto;
+
+      const regionExists = await this.prisma.region.findUnique({
+        where: { id: regionId },
       });
+
+      if (!regionExists) {
+        return { status: 404, message: 'Region not found' };
+      }
+
+      const categoryExists = await this.prisma.category.findUnique({
+        where: { id: categoryId },
+      });
+
+      if (!categoryExists) {
+        return { status: 404, message: 'Category not found' };
+      }
+
+      const bazaColor = await this.prisma.color.findFirst({
+        where: { name: createProductDto.color },
+      });
+
+      if (!bazaColor) {
+        return { status: 404, message: 'Color not found' };
+      }
+
+      const newPro = await this.prisma.product.create({
+        data: { userId, ...createProductDto },
+      });
+      await this.prisma.productColor.create({
+        data: { colorId: bazaColor.id, productId: newPro.id },
+      });
+      return newPro;
     } catch (error) {
-      throw new BadRequestException(`Error creating product: ${error.message}`);
+      return { status: 500, message: 'Failed to create product' };
     }
   }
 
-  async findAll({ page, limit, filter, sortBy, order }: { 
-    page: number; 
-    limit: number; 
-    filter?: string; 
-    sortBy?: string; 
-    order: 'ASC' | 'DESC';
+  async findAll(query: {
+    page?: number;
+    limit?: number;
+    sortBy?: 'name' | 'regionName';
+    sortOrder?: 'asc' | 'desc';
+    filterByRegion?: string;
   }) {
-    try {
-      const skip = (page - 1) * limit;
-      const where = filter 
-        ? { [filter.split(':')[0]]: { contains: filter.split(':')[1] } }
-        : {};
-      const sortOrder = sortBy 
-        ? { [sortBy]: order.toUpperCase() === 'ASC' ? 'asc' : 'desc' }
-        : {};
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'name',
+      sortOrder = 'asc',
+      filterByRegion,
+    } = query;
 
-      return await this.prisma.product.findMany({
-        skip,
+    try {
+      if (filterByRegion) {
+        const regionExists = await this.prisma.region.findUnique({
+          where: { id: Number(filterByRegion) },
+        });
+        if (!regionExists) {
+          return { status: 404, message: 'Region not found' };
+        }
+      }
+
+      const products = await this.prisma.product.findMany({
+        where: {
+          regionId: filterByRegion
+            ? { equals: Number(filterByRegion) }
+            : undefined,
+        },
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+        skip: (page - 1) * limit,
         take: limit,
-        where,
-        orderBy: sortOrder,
       });
+
+      return products;
     } catch (error) {
-      throw new BadRequestException(`Error fetching products: ${error.message}`);
+      return { status: 500, message: 'Failed to fetch products' };
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, req: Request) {
     try {
       const product = await this.prisma.product.findUnique({
         where: { id },
       });
+
       if (!product) {
-        throw new NotFoundException(`Product with ID ${id} not found`);
+        return { status: 404, message: 'Product not found' };
       }
+
+      const viewUser = await this.prisma.view.findFirst({
+        where: { userId: req['user'].id },
+      });
+      if (!viewUser) {
+        await this.prisma.view.create({
+          data: { userId: req['user'].id, productId: product.id },
+        });
+      }
+
       return product;
     } catch (error) {
-      throw new BadRequestException(`Error fetching product: ${error.message}`);
+      return { status: 500, message: 'Error fetching product' };
     }
   }
 
   async update(id: number, updateProductDto: UpdateProductDto) {
     try {
-      const product = await this.prisma.product.findUnique({
+      const productExists = await this.prisma.product.findUnique({
         where: { id },
       });
-      if (!product) {
-        throw new NotFoundException(`Product with ID ${id} not found`);
+
+      if (!productExists) {
+        return { status: 404, message: 'Product not found' };
       }
-      return await this.prisma.product.update({
+
+      const updatedProduct = await this.prisma.product.update({
         where: { id },
         data: updateProductDto,
       });
+
+      return updatedProduct;
     } catch (error) {
-      throw new BadRequestException(`Error updating product: ${error.message}`);
+      return { status: 500, message: 'Failed to update product' };
     }
   }
 
   async remove(id: number) {
     try {
-      const product = await this.prisma.product.findUnique({
+      const productExists = await this.prisma.product.findUnique({
         where: { id },
       });
-      if (!product) {
-        throw new NotFoundException(`Product with ID ${id} not found`);
+
+      if (!productExists) {
+        return { status: 404, message: 'Product not found' };
       }
-      return await this.prisma.product.delete({
+
+      const deletedProduct = await this.prisma.product.delete({
         where: { id },
       });
+
+      return deletedProduct;
     } catch (error) {
-      throw new BadRequestException(`Error deleting product: ${error.message}`);
+      return { status: 500, message: 'Failed to delete product' };
     }
   }
 }
