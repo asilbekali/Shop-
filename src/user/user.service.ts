@@ -111,6 +111,23 @@ export class UserService {
 
   // ///////////////////////////////////////////////////////////////////////
 
+  async resentOtp(email) {
+    authenticator.options = { step: 1200 };
+    const secret = authenticator.generateSecret();
+    const otp = authenticator.generate(secret);
+
+    console.log(otp); //-----------------------------------------
+
+    await this.mailer.sendEmail(email, 'Your otp', otp);
+
+    this.otpStore.set(email, {
+      otp,
+      expiresAt: Date.now() + 1200000,
+    });
+
+    return {message: "Otp send to your email"}
+  }
+
   async verify(email: string, otpBody: string) {
     try {
       const bazaUser = await this.findUser(email);
