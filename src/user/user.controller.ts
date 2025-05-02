@@ -7,7 +7,6 @@ import {
   Request,
 } from '@nestjs/common';
 import { ApiTags, ApiBody, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserService } from './user.service';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -96,7 +95,7 @@ export class UserController {
   @Post('/login')
   @ApiBody({
     description: 'Login credentials',
-    schema: {                   
+    schema: {
       type: 'object',
       properties: {
         email: { type: 'string', example: 'alex@gmail.com' },
@@ -160,18 +159,20 @@ export class UserController {
     return this.userService.getAllUser();
   }
 
-
-  @Post("refresh-token")
+  @Post('refresh-token')
   @ApiBody({
     description: 'Refresh token for update access token',
     schema: {
       type: 'object',
       properties: {
-        refreshToken: { type: 'string', example: "woefenwoefowmwpoedpwodpwpdoe" },
+        refreshToken: {
+          type: 'string',
+          example: 'woefenwoefowmwpoedpwodpwpdoe',
+        },
       },
     },
   })
-  async refreshToken(@Body() data: string){
-    return this.userService.refreshToken(data)
+  async refreshToken(@Body() data: string) {
+    return this.userService.refreshToken(data);
   }
 }
