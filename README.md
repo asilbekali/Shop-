@@ -1,6 +1,6 @@
 # 🛒 Mini Store Backend
 
-Mini Store backend - bu aksessuarlar, elektronika va boshqa mahsulotlarni sotish uchun mo'ljallangan onlayn do'konning backend qismi. Ushbu loyiha [Olec.uz](https://olec.uz) platformasiga o‘xshash bo‘lib, mahsulotlarni boshqarish, foydalanuvchilarni ro‘yxatdan o‘tkazish va buyurtmalarni boshqarish funksiyalarini o‘z ichiga oladi.
+Mini Store backend - bu aksessuarlar, elektronika va boshqa mahsulotlarni sotish uchun mo'ljallangan onlayn do'konning backend qismi. Ushbu ilova mahsulotlarni boshqarish, foydalanuvchilarni ro‘yxatdan o‘tkazish va buyurtmalarni boshqarish funksiyalarini o‘z ichiga oladi.
 
 ![Node.js](https://img.shields.io/badge/Node.js-%3E%3D16.0.0-green)
 ![NestJS](https://img.shields.io/badge/NestJS-v9.0-red)
