@@ -34,8 +34,7 @@ Mini Store backend - bu aksessuarlar, elektronika va boshqa mahsulotlarni sotish
 
 1. **Loyihani klonlang**:
    ```bash
-   git clone https://github.com/username/mini-store-backend.git
-   cd mini-store-backend
+   git clone https://github.com/asilbekali/Shop-.git
 
 
 
