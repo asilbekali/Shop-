@@ -1,3 +1,44 @@
+# 🛒 Mini Store Backend
+
+Mini Store backend - bu aksessuarlar, elektronika va boshqa mahsulotlarni sotish uchun mo'ljallangan onlayn do'konning backend qismi. Ushbu loyiha [Olec.uz](https://olec.uz) platformasiga o‘xshash bo‘lib, mahsulotlarni boshqarish, foydalanuvchilarni ro‘yxatdan o‘tkazish va buyurtmalarni boshqarish funksiyalarini o‘z ichiga oladi.
+
+![Node.js](https://img.shields.io/badge/Node.js-%3E%3D16.0.0-green)
+![NestJS](https://img.shields.io/badge/NestJS-v9.0-red)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-blue)
+![MySQL](https://img.shields.io/badge/Database-MySQL-lightgrey)
+![License](https://img.shields.io/badge/license-MIT-blue)
+
+---
+
+## ✨ Xususiyatlar
+
+- 🔒 Foydalanuvchilarni ro‘yxatdan o‘tkazish va autentifikatsiya qilish (JWT orqali)
+- 🛍️ Mahsulotlarni kategoriyalar bo‘yicha boshqarish
+- 📦 Buyurtmalarni boshqarish tizimi
+- 🔎 Qidiruv, filtr va saralash funksiyalari
+- 📊 Paginatsiya va statistikalar
+
+---
+
+## ⚙️ Texnologiyalar
+
+- **Platforma**: Node.js
+- **Freymvork**: NestJS
+- **ORM**: Prisma
+- **Ma'lumotlar bazasi**: MySQL
+- **Autentifikatsiya**: JWT (JSON Web Token)
+
+---
+
+## 🚀 Loyihani ishga tushirish
+
+1. **Loyihani klonlang**:
+   ```bash
+   git clone https://github.com/username/mini-store-backend.git
+   cd mini-store-backend
+
+
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
