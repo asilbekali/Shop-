@@ -5,6 +5,7 @@ import {
   Get,
   UseGuards,
   Request,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiTags, ApiBody, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -14,6 +15,7 @@ import { RoleUser, userStatus } from '@prisma/client';
 import { RoleDec } from './decorator/roles.decorator';
 import { Role } from './enum/roles.enum';
 import { RolesGuard } from 'src/roles/roles.guard';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 
 @ApiTags('user')
 @Controller('user')
@@ -117,6 +119,8 @@ export class UserController {
     return this.userService.login(email, password);
   }
 
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(10000)
   @Get('me')
   @UseGuards(AuthGuard)
   async me(@Request() req: any) {

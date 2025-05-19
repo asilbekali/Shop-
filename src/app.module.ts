@@ -12,9 +12,23 @@ import { LikeModule } from './like/like.module';
 import { OrderModule } from './order/order.module';
 import { CommentModule } from './comment/comment.module';
 import { MessageModule } from './message/message.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
-  imports: [PrismaModule, UserModule, MulterModule, RegionModule,  CategoryModule, ColorModule, ProductModule, LikeModule, OrderModule, CommentModule, MessageModule],
+  imports: [
+    PrismaModule,
+    UserModule,
+    MulterModule,
+    RegionModule,
+    CategoryModule,
+    ColorModule,
+    ProductModule,
+    LikeModule,
+    OrderModule,
+    CommentModule,
+    MessageModule,
+    CacheModule.register(),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
